@@ -1,0 +1,21 @@
+loki:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 5Gi
+
+promtail:
+  enabled: true
+  config:
+    logLevel: info
+    serverPort: 3101
+    clients:
+      - url: http://{{ .Release.Name }}:3100/loki/api/v1/push
+
+grafana:
+  enabled: true
+  sidecar:
+    datasources:
+      enabled: true
+  image:
+    tag: 8.3.5

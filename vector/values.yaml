@@ -1,0 +1,53 @@
+image:
+  repository: timberio/vector
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "nightly-debian"
+service:
+  ports:
+    - name: metrics-sink
+      port: 9598
+      protocol: TCP
+      targetPort: 9598
+    - name: log-port
+      port: 9002
+      protocol: TCP
+      targetPort: 9002
+    - name: metrics-port
+      port: 9001
+      protocol: TCP
+      targetPort: 9001
+customConfig:
+  data_dir: /vector-data-dir
+  sources:
+    log_source:
+      type: http_server
+      address: 0.0.0.0:9002
+      encoding: json
+    metrics_source:
+      type: http_server
+      address: 0.0.0.0:9001
+      encoding: json
+  transforms:
+    convert_metrics_source_to_metric:
+      type: log_to_metric
+      inputs:
+        - metrics_source
+      metrics:
+        - type: set
+          field: source_type
+  sinks:
+    loki_sink:
+      type: loki
+      inputs:
+        - log_source
+      endpoint: http://loki.loki.svc:3100
+      labels:
+        forwarder: vector
+      encoding:
+        codec: json
+    prometheus_exporter_sink:
+      type: prometheus_exporter
+      inputs:
+        - convert_metrics_source_to_metric
+      address: 0.0.0.0:9598

@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vector-service-monitor
+  namespace: vector
+  labels:
+    team: manager
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: vector
+      app.kubernetes.io/name: vector
+  endpoints:
+    - port: metrics-sink # prometheus exporter sink port name from vector config
